@@ -1,9 +1,13 @@
+use std::time::Duration;
+
 use sdl2::{pixels::Color, keyboard::Keycode, event::Event};
 
 fn main() -> Result<(), String> {
     //println!("Goodbye cruel world...");
+    //::std::thread::sleep(Duration::new(1, 1_000_000_000u32 / 30));
     let sdl_ctx = sdl2::init()?;
     let video_subsys = sdl_ctx.video()?;
+    //::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     let window = video_subsys
         .window("Test", 800, 600)
         .position_centered()
@@ -31,8 +35,14 @@ fn main() -> Result<(), String> {
                 } => break 'running,
                 _ => {}
             }
+            
         }
+        canvas.clear();
+        canvas.present();
+        ::std::thread::sleep(Duration::new(1, 1_000_000_000u32 / 30));
     }
+
+    
 
     Ok(())
 }
