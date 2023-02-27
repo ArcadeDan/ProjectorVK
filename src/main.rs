@@ -7,7 +7,9 @@ use std::{ffi::CString, time::Duration};
 
 use bytemuck::{Pod, Zeroable};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, video::VkInstance};
-use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
+use vulkano::buffer::{BufferAccess, BufferUsage, CpuAccessibleBuffer};
+use vulkano::command_buffer::allocator::{CommandBufferAllocator, StandardCommandBufferAllocator};
+use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::device::{Device, DeviceCreateInfo, QueueCreateInfo};
 use vulkano::instance::{self, Instance, InstanceCreateInfo, InstanceExtensions};
 use vulkano::memory::allocator::{FreeListAllocator, GenericMemoryAllocator};
@@ -24,9 +26,13 @@ struct Units {
 fn main() -> Result<(), String> {
     //println!("Goodbye cruel world...");
     //::std::thread::sleep(Duration::new(1, 1_000_000_000u32 / 30));
-    let sdl_ctx = sdl2::init()?;
-    let video_subsys = sdl_ctx.video()?;
+
     //::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+
+    //
+    //  Vulkan context set up BEGIN:
+    //
+
     let library = VulkanLibrary::new().expect("no local Vulkan library");
     let instance =
         Instance::new(library, InstanceCreateInfo::default()).expect("failed to create instance");
@@ -98,13 +104,65 @@ fn main() -> Result<(), String> {
     content[12] = 83;
     content[7] = 3;
 
+    let source_content: Vec<i32> = (0..64).collect();
+    let source = CpuAccessibleBuffer::from_iter(
+        genericdevice.borrow(),
+        BufferUsage {
+            transfer_src: true,
+            ..Default::default()
+        },
+        false,
+        source_content,
+    )
+    .expect("failed to create source buffer");
+
+    let destination_content: Vec<i32> = (0..64).map(|_| 0).collect();
+    let destination = CpuAccessibleBuffer::from_iter(
+        genericdevice.borrow(),
+        BufferUsage {
+            transfer_src: true,
+            ..Default::default()
+        },
+        false,
+        destination_content,
+    )
+    .expect("failed to create destination buffer");
+
+    //let cmddevice = StandardCommandBufferAllocator::<Arc<CommandBufferAllocator>>::new_default()
+
+    /* 
+    let mut builder = AutoCommandBufferBuilder::primary(
+        genericdevice.borrow(),
+                queue_family_index,
+                CommandBufferUsage::OneTimeSubmit,
+    ).unwrap();
+
+    */
+
+    //
+    //  Vulkan context set up END:
+    //
+
+    //
+    //  SDL context set up BEGIN:
+    //
 
     //let instance_extension = InstanceExtensions::from(instance_extensions_strings.iter().map(AsRef::as_ref));
+
+    let sdl_ctx = sdl2::init()?;
+    let video_subsys = sdl_ctx.video()?;
+
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+
+    //
+    //  SDL context set up END:
+    //
 
     canvas.set_draw_color(Color::RGB(255, 0, 0));
     canvas.clear();
     canvas.present();
+
+    //println!("{:?}", buffer.usage());
 
     let mut event_pump = sdl_ctx.event_pump()?;
 
