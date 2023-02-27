@@ -1,13 +1,25 @@
 extern crate sdl2;
 extern crate vulkano;
 
+use std::borrow::Borrow;
+use std::sync::Arc;
 use std::{ffi::CString, time::Duration};
 
+use bytemuck::{Pod, Zeroable};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, video::VkInstance};
+use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
 use vulkano::device::{Device, DeviceCreateInfo, QueueCreateInfo};
 use vulkano::instance::{self, Instance, InstanceCreateInfo, InstanceExtensions};
+use vulkano::memory::allocator::{GenericMemoryAllocator, FreeListAllocator};
 use vulkano::swapchain::Surface;
 use vulkano::{Handle, Version, VulkanLibrary, VulkanObject};
+
+#[repr(C)]
+#[derive(Default, Copy, Clone, Zeroable, Pod)]
+struct Units {
+    a: u32,
+    b: u32,
+}
 
 fn main() -> Result<(), String> {
     //println!("Goodbye cruel world...");
@@ -66,7 +78,20 @@ fn main() -> Result<(), String> {
     .expect("failed to create device");
 
     let queue = queues.next().unwrap();
+    let data = Units { a: 5, b: 50 };
+    //let iter = (0..128).map(|_| 5u8);
+    let genericdevice = GenericMemoryAllocator::<Arc<FreeListAllocator>>::new_default(device);
 
+    let buffer = CpuAccessibleBuffer::from_data(
+        genericdevice.borrow(),
+        BufferUsage {
+            uniform_buffer: true,
+            ..Default::default()
+        },
+        false,
+        data,
+    )
+    .unwrap();
     //let instance_extension = InstanceExtensions::from(instance_extensions_strings.iter().map(AsRef::as_ref));
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
 

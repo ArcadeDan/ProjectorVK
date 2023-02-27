@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 vulkano = "0.32.3"
 sdl2 = "0.35.2"
+bytemuck = "1.12.1"
