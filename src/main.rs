@@ -10,7 +10,7 @@ use sdl2::{event::Event, keyboard::Keycode, pixels::Color, video::VkInstance};
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
 use vulkano::device::{Device, DeviceCreateInfo, QueueCreateInfo};
 use vulkano::instance::{self, Instance, InstanceCreateInfo, InstanceExtensions};
-use vulkano::memory::allocator::{GenericMemoryAllocator, FreeListAllocator};
+use vulkano::memory::allocator::{FreeListAllocator, GenericMemoryAllocator};
 use vulkano::swapchain::Surface;
 use vulkano::{Handle, Version, VulkanLibrary, VulkanObject};
 
@@ -79,19 +79,26 @@ fn main() -> Result<(), String> {
 
     let queue = queues.next().unwrap();
     let data = Units { a: 5, b: 50 };
-    //let iter = (0..128).map(|_| 5u8);
+    let iter = (0..128).map(|_| 5u8);
     let genericdevice = GenericMemoryAllocator::<Arc<FreeListAllocator>>::new_default(device);
 
-    let buffer = CpuAccessibleBuffer::from_data(
+    let buffer = CpuAccessibleBuffer::from_iter(
         genericdevice.borrow(),
         BufferUsage {
             uniform_buffer: true,
             ..Default::default()
         },
         false,
-        data,
+        iter,
     )
     .unwrap();
+
+    let mut content = buffer.write().unwrap();
+
+    content[12] = 83;
+    content[7] = 3;
+
+
     //let instance_extension = InstanceExtensions::from(instance_extensions_strings.iter().map(AsRef::as_ref));
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
 
