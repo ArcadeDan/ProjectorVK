@@ -30,9 +30,22 @@ fn main() {
 
     canvas.set_draw_color(Color::RGB(0, 255, 255));
     canvas.window().gl_set_context_to_current();
+
+
     unsafe {
+        
+        
         gl::ClearColor(0.6, 0.0, 0.8, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT);
+
+        let mut vao = 0;
+        let mut vbo = 0;
+        gl::GenBuffers(1, &mut vbo);
+        gl::GenVertexArrays(1, &mut vao);
+        assert_ne!(vao, 0);
+        assert_ne!(vbo, 0);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+
     }
 
     canvas.present();
