@@ -46,6 +46,10 @@ fn main() {
         assert_ne!(vbo, 0);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
+        type Vertex = [f32; 3];
+        const VERTICES: [Vertex; 3] =
+        [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]];
+
     }
 
     canvas.present();
